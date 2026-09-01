@@ -15,7 +15,11 @@ const choice = (symbol, prompt, options, answer, note = "", speak = "") =>
   ({ type: "choice", symbol, prompt, options, answer, note, speak });
 const voice = text => ({ text });
 const audio = (items, label = "Послушать", gap = 650) => ({ items, label, gap });
-const AUDIO_CHUNK_COUNT = 22;
+const LETTER_AUDIO_KEYS = new Set(["α", "β", "γ", "δ", "ε", "ζ", "η", "θ", "ι", "κ", "λ", "μ", "ν", "ξ", "ο", "π", "ρ", "σ", "τ", "υ", "φ", "χ", "ψ", "ω"]);
+const AUDIO_PACKS = {
+  speech: { count: 22, prefix: "audio/chunks/greek-", manifest: "audio/greek-speech.json?v=1", version: 1, bufferPromise: null, manifestPromise: null },
+  letters: { count: 5, prefix: "audio/letter-chunks/letter-", manifest: "audio/greek-letters.json?v=1", version: 1, bufferPromise: null, manifestPromise: null }
+};
 
 function lesson(id, block, title, subtitle, glyph, steps) {
   return { id, block, title, subtitle, glyph, steps: [intro(title, subtitle), ...steps] };
@@ -421,8 +425,6 @@ let session = null;
 let activeSpeech = 0;
 let referenceAudioSources = [];
 let audioContext = null;
-let audioBufferPromise = null;
-let audioManifestPromise = null;
 let activeAudioNode = null;
 
 function loadState() {
@@ -874,19 +876,20 @@ function getAudioContext() {
   return audioContext;
 }
 
-async function loadAudioPack() {
+async function loadAudioPack(packName) {
   const context = getAudioContext();
+  const pack = AUDIO_PACKS[packName];
   if (context.state === "suspended") await context.resume();
-  if (!audioManifestPromise) {
-    audioManifestPromise = fetch("audio/greek-speech.json?v=1").then(response => {
+  if (!pack.manifestPromise) {
+    pack.manifestPromise = fetch(pack.manifest).then(response => {
       if (!response.ok) throw new Error("Audio manifest failed to load");
       return response.json();
     });
   }
-  if (!audioBufferPromise) {
-    audioBufferPromise = Promise.all(Array.from({ length: AUDIO_CHUNK_COUNT }, async (_, index) => {
+  if (!pack.bufferPromise) {
+    pack.bufferPromise = Promise.all(Array.from({ length: pack.count }, async (_, index) => {
       const name = String(index).padStart(3, "0");
-      const response = await fetch(`audio/chunks/greek-${name}?v=1`);
+      const response = await fetch(`${pack.prefix}${name}?v=${pack.version}`);
       if (!response.ok) throw new Error(`Audio chunk ${name} failed to load`);
       return new Uint8Array(await response.arrayBuffer());
     })).then(chunks => {
@@ -901,17 +904,18 @@ async function loadAudioPack() {
     });
   }
   try {
-    const [manifest, buffer] = await Promise.all([audioManifestPromise, audioBufferPromise]);
+    const [manifest, buffer] = await Promise.all([pack.manifestPromise, pack.bufferPromise]);
     return { context, manifest, buffer };
   } catch (error) {
-    audioManifestPromise = null;
-    audioBufferPromise = null;
+    pack.manifestPromise = null;
+    pack.bufferPromise = null;
     throw error;
   }
 }
 
 async function playRecordedText(text, token) {
-  const { context, manifest, buffer } = await loadAudioPack();
+  const packName = LETTER_AUDIO_KEYS.has(text) ? "letters" : "speech";
+  const { context, manifest, buffer } = await loadAudioPack(packName);
   if (token !== activeSpeech) return;
   const segment = manifest[text];
   if (!segment) throw new Error(`Audio segment is missing: ${text}`);
