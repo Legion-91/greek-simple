@@ -229,6 +229,8 @@ h1, h2 { font-family: "Playfair Display", serif; }
 .chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 18px 0; }
 .chip { padding: 8px 12px; border: 1px solid var(--line); border-radius: 999px; background: #f8f5ed; font-size: 13px; font-weight: 700; }
 .speak-btn { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 18px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 999px; color: var(--green); background: transparent; cursor: pointer; font-weight: 800; }
+.audio-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 18px; }
+.audio-actions .speak-btn { margin-bottom: 0; }
 .speak-dot { width: 9px; height: 9px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 4px rgba(41,92,71,.12); }
 .speak-btn:disabled { cursor: default; opacity: .72; }
 .speak-btn.speaking .speak-dot { animation: speak-pulse .9s ease-in-out infinite alternate; }

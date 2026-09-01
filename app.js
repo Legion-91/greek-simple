@@ -9,10 +9,11 @@ const BLOCKS = [
 ];
 
 const intro = (title, text) => ({ type: "intro", title, text });
-const teach = (symbol, title, text, pronunciation = "", speak = "", chips = [], tip = "") =>
-  ({ type: "teach", symbol, title, text, pronunciation, speak, chips, tip });
+const teach = (symbol, title, text, pronunciation = "", speak = "", chips = [], tip = "", audios = null) =>
+  ({ type: "teach", symbol, title, text, pronunciation, speak, chips, tip, audios });
 const choice = (symbol, prompt, options, answer, note = "", speak = "") =>
   ({ type: "choice", symbol, prompt, options, answer, note, speak });
+const voice = (text, lang = "el-GR") => ({ text, lang });
 const audio = (items, label = "Послушать", gap = 650) => ({ items, label, gap });
 
 function lesson(id, block, title, subtitle, glyph, steps) {
@@ -86,9 +87,18 @@ const LESSONS = [
   ]),
 
   lesson(7, 2, "Гамма и весь алфавит", "Γ меняется рядом с разными гласными", "Γ", [
-    teach("Γ γ", "Гамма", "Основной звук произносится глубже русского «г», без полного смыкания.", "фрикативный г", audio(["γλώσσα"], "Послушать пример")),
-    teach("γε γι γη γυ", "Мягкая гамма", "Перед ε и звуком «и» гамма становится мягкой.", "мягкий г", audio(["γελώ", "γιορτή"], "Послушать примеры")),
-    teach("για", "Особое сочетание", "В начале слога γι перед другой гласной часто звучит как «й».", "я", audio(["γιατρός"], "Послушать пример"), ["γιατρός = ятро́с"]),
+    teach("Γ γ", "Гамма", "Название буквы по-русски: «гамма». В греческом слове ее основной звук произносится глубже русского «г».", "фрикативный г", "", ["γάλα = га́ла, молоко"], "", [
+      { label: "Название: гамма", source: voice("Гамма", "ru-RU") },
+      { label: "Пример: γάλα", source: voice("γάλα") }
+    ]),
+    teach("γε γι γη γυ", "Мягкая гамма", "Перед ε и звуком «и» гамма становится мягкой. Слушай каждое слово отдельно.", "мягкий г", "", ["γελώ = гэло́", "γύρος = ги́рос"], "", [
+      { label: "γελώ", source: voice("γελώ") },
+      { label: "γύρος", source: voice("γύρος") }
+    ]),
+    teach("για", "Особое сочетание", "В начале слога γι перед другой гласной часто звучит близко к «й».", "я или йо", "", ["γιατρός = ятро́с", "γιορτή = йорти́"], "", [
+      { label: "γιατρός", source: voice("γιατρός") },
+      { label: "γιορτή", source: voice("γιορτή") }
+    ]),
     choice("γε", "Как звучит γ перед ε?", ["мягко", "как русское к", "как н"], "мягко"),
     choice("για", "Выбери близкое чтение", ["я", "гиа", "ка"], "я"),
     choice("24", "Сколько букв в греческом алфавите?", ["24", "26", "33"], "24"),
@@ -129,7 +139,10 @@ const LESSONS = [
   lesson(11, 3, "Согласные парами", "ΜΠ, ΝΤ, ΓΚ, ΓΓ", "μπ", [
     teach("μπ", "Ми и пи", "В начале слова обычно звучит как «б». В середине возможны «мб» и «мп».", "б, мб или мп", audio(["μπίρα", "λάμπα"], "Послушать примеры"), ["μπίρα = би́ра", "λάμπα = ла́мба"]),
     teach("ντ", "Ни и таф", "В начале слова обычно звучит как «д». В середине возможны «нд» и «нт».", "д, нд или нт", audio(["ντομάτα", "πάντα"], "Послушать примеры"), ["ντομάτα = дома́та", "πάντα = па́нда"]),
-    teach("γκ   γγ", "Гамма в сочетаниях", "В начале слова γκ передает «г». В середине слышится носовой оттенок.", "г или нг", audio(["γκάζι", "άγγελος"], "Послушать примеры"), ["γκάζι = га́зи", "άγγελος = а́нгелос"]),
+    teach("γκ   γγ", "Гамма в сочетаниях", "В начале слова γκ передает «г». В середине γγ слышится с носовым оттенком. Примеры запускаются отдельно.", "г или нг", "", ["γκάζι = га́зи", "άγγελος = а́нгелос"], "", [
+      { label: "γκάζι", source: voice("γκάζι") },
+      { label: "άγγελος", source: voice("άγγελος") }
+    ]),
     choice("μπίρα", "Как начинается слово?", ["б", "мп", "п"], "б", "μπίρα значит «пиво».", "μπίρα"),
     choice("ντομάτα", "Как начинается слово?", ["д", "нт", "т"], "д", "ντομάτα значит «помидор».", "ντομάτα"),
     choice("γκάζι", "Как читается γκ в начале?", ["г", "к", "нг"], "г", "γκάζι значит «газ».", "γκάζι"),
@@ -287,6 +300,12 @@ const LESSONS = [
   ])
 ];
 
+const RUSSIAN_LETTER_NAMES = [
+  "Альфа", "Вита", "Гамма", "Дельта", "Эпсилон", "Зита", "Ита", "Фита",
+  "Йота", "Каппа", "Лямбда", "Ми", "Ни", "Кси", "Омикрон", "Пи",
+  "Ро", "Сигма", "Таф", "Ипсилон", "Фи", "Хи", "Пси", "Омега"
+];
+
 const REFERENCE_ALPHABET = [
   { letter: "Α α", name: "άλφα", sound: "а", example: "αλάτι", reading: "ала́ти", meaning: "соль" },
   { letter: "Β β", name: "βήτα", sound: "в", example: "βάζο", reading: "ва́зо", meaning: "ваза" },
@@ -312,7 +331,14 @@ const REFERENCE_ALPHABET = [
   { letter: "Χ χ", name: "χι", sound: "х", example: "χώρα", reading: "хо́ра", meaning: "страна" },
   { letter: "Ψ ψ", name: "ψι", sound: "пс", example: "ψάρι", reading: "пса́ри", meaning: "рыба" },
   { letter: "Ω ω", name: "ωμέγα", sound: "о", example: "ώρα", reading: "о́ра", meaning: "час" }
-].map(item => ({ ...item, audio: audio([item.name, ...item.example.split(", ")], "Название и пример") }));
+].map((item, index) => ({
+  ...item,
+  russianName: RUSSIAN_LETTER_NAMES[index],
+  audio: audio([
+    voice(RUSSIAN_LETTER_NAMES[index], "ru-RU"),
+    ...item.example.split(", ").map(word => voice(word))
+  ], "Название и пример")
+}));
 
 const REFERENCE_RULES = [
   { pattern: "ι, η, υ, ει, οι", reading: "и", title: "Пять написаний звука «и»", note: "Разные буквы и сочетания звучат одинаково.", examples: ["μήνας", "εμείς", "μοίρα"], transcript: "ми́нас, эми́с, ми́ра" },
@@ -556,7 +582,7 @@ function renderReferenceAlphabet() {
       return `<button class="ref-card alphabet-card" data-ref-audio="${audioIndex}">
         <span class="ref-letter">${item.letter}</span>
         <span class="ref-body">
-          <span class="ref-title">${item.name}</span>
+          <span class="ref-title">${item.russianName} · ${item.name}</span>
           <span class="ref-reading">Звук: ${item.sound}</span>
           <span class="ref-example"><b>${item.example}</b> · ${item.reading} · ${item.meaning}</span>
         </span>
@@ -653,7 +679,7 @@ function renderStep(step) {
       ${step.pronunciation ? `<span class="pronunciation">${step.pronunciation}</span>` : ""}
       <p class="lead">${step.text}</p>
       ${step.chips?.length ? `<div class="chips">${step.chips.map(item => `<span class="chip">${item}</span>`).join("")}</div>` : ""}
-      ${step.speak ? `<button class="speak-btn" data-action="speak"><span class="speak-dot"></span><span class="speak-label">${getAudioLabel(step.speak)}</span></button>` : ""}
+      ${renderTeachAudio(step)}
       ${step.tip ? `<div class="tip">${step.tip}</div>` : ""}
       <div class="activity-actions"><button class="primary-btn dark" data-action="next">Понятно</button></div>
     </article>`;
@@ -672,6 +698,16 @@ function renderStep(step) {
       <div class="activity-actions"><button class="primary-btn dark" data-action="check" disabled>Проверить</button></div>
     </article>`;
   }
+}
+
+function renderTeachAudio(step) {
+  if (step.audios?.length) {
+    return `<div class="audio-actions">${step.audios.map((item, index) => `
+      <button class="speak-btn" data-step-audio="${index}"><span class="speak-dot"></span><span class="speak-label">${item.label}</span></button>
+    `).join("")}</div>`;
+  }
+  if (!step.speak) return "";
+  return `<button class="speak-btn" data-action="speak"><span class="speak-dot"></span><span class="speak-label">${getAudioLabel(step.speak)}</span></button>`;
 }
 
 function getAudioLabel(source) {
@@ -709,6 +745,9 @@ function bindLessonEvents() {
   const speakButton = document.querySelector('[data-action="speak"]');
   const currentStep = session.lesson.steps[session.step];
   speakButton?.addEventListener("click", () => speak(currentStep.speak, speakButton));
+  document.querySelectorAll("[data-step-audio]").forEach(button => {
+    button.addEventListener("click", () => speak(currentStep.audios[Number(button.dataset.stepAudio)].source, button));
+  });
   document.querySelectorAll("[data-answer]").forEach(button => {
     button.addEventListener("click", () => selectAnswer(Number(button.dataset.answer)));
   });
@@ -780,9 +819,8 @@ function speak(source, button) {
     return;
   }
 
-  const spec = source && typeof source === "object" && !Array.isArray(source)
-    ? source
-    : { items: Array.isArray(source) ? source : [source] };
+  const isAudioGroup = source && typeof source === "object" && !Array.isArray(source) && "items" in source;
+  const spec = isAudioGroup ? source : { items: Array.isArray(source) ? source : [source] };
   const items = (Array.isArray(spec.items) ? spec.items : [spec.items]).filter(Boolean);
   const gap = Number.isFinite(spec.gap) ? spec.gap : 650;
   if (!items.length) return;
@@ -813,11 +851,13 @@ function speak(source, button) {
     }
 
     if (label && items.length > 1) label.textContent = `Слушаем ${index + 1} из ${items.length}`;
-    const utterance = new SpeechSynthesisUtterance(items[index]);
-    utterance.lang = "el-GR";
-    utterance.rate = .78;
+    const item = items[index] && typeof items[index] === "object" ? items[index] : voice(items[index]);
+    const utterance = new SpeechSynthesisUtterance(item.text);
+    utterance.lang = item.lang || "el-GR";
+    utterance.rate = utterance.lang.toLowerCase().startsWith("ru") ? .9 : .78;
     const voices = window.speechSynthesis.getVoices();
-    utterance.voice = voices.find(voice => voice.lang.toLowerCase().startsWith("el")) || null;
+    const language = utterance.lang.toLowerCase().split("-")[0];
+    utterance.voice = voices.find(itemVoice => itemVoice.lang.toLowerCase().startsWith(language)) || null;
     utterance.onend = () => {
       if (token !== activeSpeech) return;
       if (index < items.length - 1) setTimeout(() => playItem(index + 1), gap);
