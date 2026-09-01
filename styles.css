@@ -59,6 +59,17 @@ button:focus-visible, a:focus-visible { outline: 3px solid rgba(41, 92, 71, .3);
 .brand-name { font-size: 20px; }
 
 .top-stats { display: flex; align-items: center; gap: 10px; }
+.top-actions { display: flex; align-items: center; gap: 10px; }
+.reference-btn {
+  padding: 10px 15px;
+  border: 1px solid var(--green);
+  border-radius: 999px;
+  color: var(--green);
+  background: transparent;
+  cursor: pointer;
+  font-weight: 800;
+}
+.reference-btn:hover { color: white; background: var(--green); }
 .stat-pill {
   padding: 10px 14px;
   border: 1px solid var(--line);
@@ -234,6 +245,7 @@ h1, h2 { font-family: "Playfair Display", serif; }
 .feedback.wrong { color: #843e2e; background: #fae6df; }
 .activity-actions { display: flex; justify-content: center; gap: 10px; margin-top: 26px; }
 .secondary-btn { padding: 14px 20px; border: 1px solid var(--line); border-radius: 15px; color: var(--ink); background: transparent; font-weight: 800; }
+.secondary-btn.compact { padding: 10px 15px; background: rgba(255,255,255,.45); }
 
 .finish-badge { display: grid; place-items: center; width: 94px; height: 94px; margin: 0 auto 22px; border-radius: 28px; color: white; background: var(--green); font-family: "Playfair Display", serif; font-size: 42px; transform: rotate(-4deg); }
 .result-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 520px; margin: 26px auto; }
@@ -243,6 +255,61 @@ h1, h2 { font-family: "Playfair Display", serif; }
 
 .toast { position: fixed; right: 20px; bottom: 20px; z-index: 10; padding: 13px 17px; border-radius: 13px; color: white; background: var(--ink); box-shadow: var(--shadow); font-size: 13px; animation: toast .25s ease both; }
 @keyframes toast { from { opacity: 0; transform: translateY(10px); } }
+
+.reference-shell { min-height: 100vh; }
+.reference-hero { max-width: 790px; padding: 58px 0 28px; }
+.reference-hero h1 { margin-bottom: 14px; font-size: clamp(40px, 6vw, 68px); line-height: 1; letter-spacing: -.04em; }
+.reference-hero p:last-child { max-width: 700px; margin: 0; color: var(--muted); font-size: 16px; line-height: 1.65; }
+.reference-tabs { position: sticky; top: 10px; z-index: 5; display: inline-flex; gap: 5px; margin-bottom: 28px; padding: 5px; border: 1px solid var(--line); border-radius: 16px; background: rgba(255,253,248,.9); box-shadow: 0 8px 30px rgba(33,47,39,.08); backdrop-filter: blur(12px); }
+.reference-tab { padding: 11px 18px; border: 0; border-radius: 11px; color: var(--muted); background: transparent; cursor: pointer; font-weight: 800; }
+.reference-tab.active { color: white; background: var(--green); }
+.reference-content { padding-bottom: 70px; }
+.reference-grid { display: grid; gap: 12px; }
+.alphabet-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.rules-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.numbers-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+.ref-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 14px 16px;
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  color: var(--ink);
+  background: var(--card);
+  cursor: pointer;
+  text-align: left;
+  box-shadow: 0 8px 24px rgba(33,47,39,.04);
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+.ref-card:hover { border-color: #91a99c; box-shadow: 0 14px 30px rgba(33,47,39,.08); transform: translateY(-2px); }
+.ref-card:disabled { cursor: default; opacity: .76; transform: none; }
+.ref-letter { display: grid; place-items: center; min-width: 76px; min-height: 76px; padding: 6px; border-radius: 17px; color: var(--green-dark); background: #edf0e4; font-family: "Playfair Display", serif; font-size: 31px; font-weight: 700; }
+.ref-body { display: flex; min-width: 0; flex-direction: column; gap: 5px; }
+.ref-title { display: block; font-size: 16px; font-weight: 800; }
+.ref-reading { color: var(--green); font-size: 13px; font-weight: 800; }
+.ref-example { display: block; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.ref-example b { color: var(--ink); font-size: 14px; }
+.ref-note { display: block; color: var(--muted); font-size: 13px; line-height: 1.55; }
+.ref-listen { grid-column: 1 / -1; display: inline-flex; align-items: center; gap: 8px; width: max-content; color: var(--green); font-size: 12px; font-weight: 800; }
+.ref-card.speaking .speak-dot { animation: speak-pulse .9s ease-in-out infinite alternate; }
+
+.rule-card { grid-template-columns: 1fr; min-height: 245px; }
+.rule-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.rule-pattern { font-family: "Playfair Display", serif; font-size: 30px; font-weight: 700; }
+.rule-reading { padding: 7px 10px; border-radius: 999px; color: var(--green); background: #e7eddf; font-size: 12px; font-weight: 800; text-align: center; }
+
+.reference-notice { margin-bottom: 24px; padding: 18px 20px; border: 1px solid #d8d2bf; border-radius: 16px; color: #625d4c; background: #fbf5dc; font-size: 13px; line-height: 1.6; }
+.number-group { margin-bottom: 40px; }
+.number-group-head { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+.number-group-head h2 { margin: 0; font-size: 29px; }
+.number-group-head span { color: var(--muted); font-size: 12px; }
+.number-card { grid-template-columns: 72px minmax(0, 1fr); min-height: 155px; }
+.number-value { color: var(--green-dark); font-family: "Playfair Display", serif; font-size: 28px; font-weight: 700; line-height: 1.1; }
+.number-greek { font-family: "Playfair Display", serif; font-size: 21px; font-weight: 700; overflow-wrap: anywhere; }
 
 @media (max-width: 760px) {
   .shell { width: min(100% - 24px, 1160px); }
@@ -260,6 +327,19 @@ h1, h2 { font-family: "Playfair Display", serif; }
   .result-stat { display: flex; align-items: center; justify-content: space-between; }
   .activity-actions { flex-direction: column; }
   .activity-actions button { width: 100%; }
+  .reference-hero { padding-top: 36px; }
+  .reference-tabs { display: flex; width: 100%; top: 6px; }
+  .reference-tab { flex: 1; padding: 11px 8px; }
+  .alphabet-grid, .rules-grid, .numbers-grid { grid-template-columns: 1fr; }
+  .rule-card { min-height: 0; }
+  .number-card { min-height: 140px; }
+}
+
+@media (max-width: 430px) {
+  .top-stats { display: none; }
+  .ref-card { padding: 17px; }
+  .ref-letter { min-width: 66px; min-height: 66px; font-size: 27px; }
+  .number-group-head span { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

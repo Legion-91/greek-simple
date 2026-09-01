@@ -287,11 +287,112 @@ const LESSONS = [
   ])
 ];
 
+const REFERENCE_ALPHABET = [
+  { letter: "Α α", name: "άλφα", sound: "а", example: "αλάτι", reading: "ала́ти", meaning: "соль" },
+  { letter: "Β β", name: "βήτα", sound: "в", example: "βάζο", reading: "ва́зо", meaning: "ваза" },
+  { letter: "Γ γ", name: "γάμμα", sound: "особый г", example: "γάλα", reading: "га́ла", meaning: "молоко" },
+  { letter: "Δ δ", name: "δέλτα", sound: "межзубный звонкий", example: "δώρο", reading: "до́ро", meaning: "подарок" },
+  { letter: "Ε ε", name: "έψιλον", sound: "э", example: "εμένα", reading: "эмэ́на", meaning: "меня, мне" },
+  { letter: "Ζ ζ", name: "ζήτα", sound: "з", example: "ζάρι", reading: "за́ри", meaning: "игральная кость" },
+  { letter: "Η η", name: "ήτα", sound: "и", example: "ημέρα", reading: "имэ́ра", meaning: "день" },
+  { letter: "Θ θ", name: "θήτα", sound: "межзубный глухой", example: "θέμα", reading: "тэ́ма", meaning: "тема" },
+  { letter: "Ι ι", name: "γιώτα", sound: "и", example: "ίσος", reading: "и́сос", meaning: "равный" },
+  { letter: "Κ κ", name: "κάππα", sound: "к", example: "καρέκλα", reading: "карэ́кла", meaning: "стул" },
+  { letter: "Λ λ", name: "λάμδα", sound: "л", example: "λάδι", reading: "ла́ди", meaning: "масло" },
+  { letter: "Μ μ", name: "μι", sound: "м", example: "μέλι", reading: "мэ́ли", meaning: "мед" },
+  { letter: "Ν ν", name: "νι", sound: "н", example: "νερό", reading: "нэро́", meaning: "вода" },
+  { letter: "Ξ ξ", name: "ξι", sound: "кс", example: "ξένος", reading: "ксэ́нос", meaning: "иностранец" },
+  { letter: "Ο ο", name: "όμικρον", sound: "о", example: "όνομα", reading: "о́нома", meaning: "имя" },
+  { letter: "Π π", name: "πι", sound: "п", example: "πόρτα", reading: "по́рта", meaning: "дверь" },
+  { letter: "Ρ ρ", name: "ρο", sound: "р", example: "ρόδα", reading: "ро́да", meaning: "колесо" },
+  { letter: "Σ σ ς", name: "σίγμα", sound: "с", example: "σπίτι, ένας", reading: "спи́ти, э́нас", meaning: "дом, один" },
+  { letter: "Τ τ", name: "ταυ", sound: "т", example: "τόπος", reading: "то́пос", meaning: "место" },
+  { letter: "Υ υ", name: "ύψιλον", sound: "и", example: "ύφος", reading: "и́фос", meaning: "стиль" },
+  { letter: "Φ φ", name: "φι", sound: "ф", example: "φάρος", reading: "фа́рос", meaning: "маяк" },
+  { letter: "Χ χ", name: "χι", sound: "х", example: "χώρα", reading: "хо́ра", meaning: "страна" },
+  { letter: "Ψ ψ", name: "ψι", sound: "пс", example: "ψάρι", reading: "пса́ри", meaning: "рыба" },
+  { letter: "Ω ω", name: "ωμέγα", sound: "о", example: "ώρα", reading: "о́ра", meaning: "час" }
+].map(item => ({ ...item, audio: audio([item.name, ...item.example.split(", ")], "Название и пример") }));
+
+const REFERENCE_RULES = [
+  { pattern: "ι, η, υ, ει, οι", reading: "и", title: "Пять написаний звука «и»", note: "Разные буквы и сочетания звучат одинаково.", examples: ["μήνας", "εμείς", "μοίρα"], transcript: "ми́нас, эми́с, ми́ра" },
+  { pattern: "αι", reading: "э", title: "Альфа и йота", note: "Обычно образуют один звук «э».", examples: ["αίμα", "και"], transcript: "э́ма, кэ" },
+  { pattern: "ου", reading: "у", title: "Омикрон и ипсилон", note: "Вместе образуют один звук «у».", examples: ["ουρανός", "πουλί"], transcript: "урано́с, пули́" },
+  { pattern: "αυ", reading: "ав или аф", title: "Зависит от следующего звука", note: "Перед звонким звуком слышится «ав», перед глухим «аф».", examples: ["αύριο", "αυτός"], transcript: "а́врио, афто́с" },
+  { pattern: "ευ", reading: "эв или эф", title: "Та же логика", note: "Перед звонким звуком слышится «эв», перед глухим «эф».", examples: ["δουλεύω", "εύκολος"], transcript: "дулэ́во, э́фколос" },
+  { pattern: "μπ", reading: "б, мб или мп", title: "Ми и пи", note: "В начале слова обычно «б». В середине возможны «мб» и «мп».", examples: ["μπίρα", "λάμπα"], transcript: "би́ра, ла́мба" },
+  { pattern: "ντ", reading: "д, нд или нт", title: "Ни и таф", note: "В начале слова обычно «д». В середине возможны «нд» и «нт».", examples: ["ντομάτα", "πάντα"], transcript: "дома́та, па́нда" },
+  { pattern: "γκ, γγ", reading: "г или нг", title: "Гамма в сочетаниях", note: "В начале γκ дает «г». В середине появляется носовой оттенок.", examples: ["γκάζι", "άγγελος"], transcript: "га́зи, а́нгелос" },
+  { pattern: "τσ", reading: "ц", title: "Таф и сигма", note: "Две буквы вместе передают звук «ц».", examples: ["τσέπη"], transcript: "цэ́пи" },
+  { pattern: "τζ", reading: "дз", title: "Таф и зита", note: "Две буквы вместе передают звук «дз».", examples: ["τζάμι"], transcript: "дза́ми" },
+  { pattern: "γ + ε, ι", reading: "мягкий г", title: "Мягкая гамма", note: "Перед ε и звуком «и» гамма становится мягче.", examples: ["γελώ", "γύρος"], transcript: "гэло́, ги́рос" },
+  { pattern: "γι + гласная", reading: "й", title: "Гамма и йота", note: "Перед другой гласной сочетание часто звучит как «й».", examples: ["γιατρός", "γιορτή"], transcript: "ятро́с, йорти́" },
+  { pattern: "κ, χ + ε или и", reading: "мягче", title: "Смягчение согласных", note: "Перед ε и звуком «и» κ и χ звучат мягче.", examples: ["και", "χέρι"], transcript: "кэ, хэ́ри" },
+  { pattern: "σ и ς", reading: "с", title: "Две формы сигмы", note: "σ стоит в начале и середине, ς только в конце слова.", examples: ["σπίτι", "ένας"], transcript: "спи́ти, э́нас" },
+  { pattern: "ά έ ή ί ό ύ ώ", reading: "ударение", title: "Знак над гласной", note: "В многосложном слове знак показывает ударный слог.", examples: ["μάνα", "μαμά"], transcript: "ма́на, мама́" }
+].map(item => ({ ...item, audio: audio(item.examples, "Послушать примеры") }));
+
+const NUMBER_BASICS = [
+  ["0", "μηδέν"], ["1", "ένα"], ["2", "δύο"], ["3", "τρία"], ["4", "τέσσερα"],
+  ["5", "πέντε"], ["6", "έξι"], ["7", "επτά"], ["8", "οκτώ"], ["9", "εννέα"], ["10", "δέκα"],
+  ["11", "έντεκα"], ["12", "δώδεκα"], ["13", "δεκατρία"], ["14", "δεκατέσσερα"], ["15", "δεκαπέντε"],
+  ["16", "δεκαέξι"], ["17", "δεκαεπτά"], ["18", "δεκαοκτώ"], ["19", "δεκαεννέα"], ["20", "είκοσι"]
+].map(([value, greek]) => ({
+  group: Number(value) <= 10 ? "От 0 до 10" : "От 11 до 20",
+  value, greek, audio: greek,
+  note: value === "1" ? "Форма среднего рода для счета." :
+    value === "2" ? "Также встречается разговорный вариант δυό." :
+    value === "7" ? "Также встречается разговорный вариант εφτά." :
+    value === "8" ? "Также встречается разговорный вариант οχτώ." :
+    value === "9" ? "Также встречается разговорный вариант εννιά." :
+    value === "11" ? "Особая форма. Также встречается ένδεκα." :
+    value === "16" ? "Также встречается сокращенный вариант δεκάξι." :
+    value === "17" ? "Также встречается вариант δεκαεφτά." :
+    value === "18" ? "Также встречается вариант δεκαοχτώ." :
+    value === "19" ? "Также встречается вариант δεκαεννιά." :
+    ["3", "4"].includes(value) ? "Показана форма среднего рода." :
+    value === "12" ? "Особая форма, ее нужно запомнить." :
+    Number(value) >= 13 && Number(value) <= 19 ? "В начале видна основа δέκα: десять." : "Базовое число."
+}));
+
+const NUMBER_TENS = [
+  ["30", "τριάντα"], ["40", "σαράντα"], ["50", "πενήντα"], ["60", "εξήντα"],
+  ["70", "εβδομήντα"], ["80", "ογδόντα"], ["90", "ενενήντα"], ["100", "εκατό"]
+].map(([value, greek]) => ({
+  group: value === "100" ? "Сотни" : "Десятки",
+  value, greek, audio: greek,
+  note: value === "100" ? "Сто и граница следующего разряда." : "Опорное число для составления двузначных."
+}));
+
+const NUMBER_HUNDREDS = [
+  ["200", "διακόσια"], ["300", "τριακόσια"], ["400", "τετρακόσια"], ["500", "πεντακόσια"],
+  ["600", "εξακόσια"], ["700", "επτακόσια"], ["800", "οκτακόσια"], ["900", "εννιακόσια"]
+].map(([value, greek]) => ({ group: "Сотни", value, greek, audio: greek, note: "Для чтения числа показана форма среднего рода." }));
+
+const NUMBER_EXAMPLES = [
+  { value: "21", greek: "είκοσι ένα", note: "20 и 1: сначала десяток, затем единица." },
+  { value: "32", greek: "τριάντα δύο", note: "30 и 2. Союз между частями не нужен." },
+  { value: "98", greek: "ενενήντα οκτώ", note: "90 и 8. Та же схема работает до 99." },
+  { value: "125", greek: "εκατόν είκοσι πέντε", note: "100, 20 и 5. Перед продолжением часто используется εκατόν." },
+  { value: "347", greek: "τριακόσια σαράντα επτά", note: "300, 40 и 7. Читаем слева направо." },
+  { value: "1 000", greek: "χίλια", note: "Одна тысяча в составе числа." },
+  { value: "2 000", greek: "δύο χιλιάδες", note: "Начиная с двух используется χιλιάδες." },
+  { value: "1 425", greek: "χίλια τετρακόσια είκοσι πέντε", note: "Тысяча, сотни, десятки и единицы." },
+  { value: "12 080", greek: "δώδεκα χιλιάδες ογδόντα", note: "Если сотен нет, сразу переходим к десяткам." },
+  { value: "100 000", greek: "εκατό χιλιάδες", note: "Перед χιλιάδες ставится уже знакомое число." },
+  { value: "1 000 000", greek: "ένα εκατομμύριο", note: "Один миллион." },
+  { value: "1 000 000 000", greek: "ένα δισεκατομμύριο", note: "Один миллиард." },
+  { value: "1 000 000 000 000", greek: "ένα τρισεκατομμύριο", note: "Один триллион." }
+].map(item => ({ ...item, group: "Как строятся числа", audio: item.greek }));
+
+const REFERENCE_NUMBERS = [...NUMBER_BASICS, ...NUMBER_TENS, ...NUMBER_HUNDREDS, ...NUMBER_EXAMPLES];
+
 const COOKIE = "lexi_progress";
 const DEFAULT_STATE = { c: [], l: 1, s: 0, d: "", q: 0, a: 0 };
 let state = loadState();
 let session = null;
 let activeSpeech = 0;
+let referenceAudioSources = [];
 
 function loadState() {
   try {
@@ -336,9 +437,12 @@ function renderHome() {
     <main class="shell">
       <header class="topbar">
         <div class="brand"><span class="brand-mark">λ</span><span class="brand-name">Лекси</span></div>
-        <div class="top-stats">
-          <span class="stat-pill"><strong>${state.s}</strong> дней подряд</span>
-          <span class="stat-pill"><strong>${completed}</strong> из 26</span>
+        <div class="top-actions">
+          <button class="reference-btn" data-action="reference">Сводка</button>
+          <div class="top-stats">
+            <span class="stat-pill"><strong>${state.s}</strong> дней подряд</span>
+            <span class="stat-pill"><strong>${completed}</strong> из 26</span>
+          </div>
         </div>
       </header>
 
@@ -365,6 +469,7 @@ function renderHome() {
     </main>`;
 
   document.querySelector('[data-action="continue"]').addEventListener("click", () => startLesson(continueId));
+  document.querySelector('[data-action="reference"]').addEventListener("click", () => renderReference("alphabet"));
   document.querySelector('[data-action="reset"]').addEventListener("click", resetProgress);
   document.querySelectorAll("[data-lesson]").forEach(button => {
     button.addEventListener("click", () => startLesson(Number(button.dataset.lesson)));
@@ -393,6 +498,109 @@ function renderBlock(block) {
         }).join("")}
       </div>
     </article>`;
+}
+
+function renderReference(tab = "alphabet") {
+  stopSpeech();
+  session = null;
+  referenceAudioSources = [];
+  const tabs = [
+    { id: "alphabet", label: "Алфавит" },
+    { id: "rules", label: "Чтение" },
+    { id: "numbers", label: "Числа" }
+  ];
+  const titles = {
+    alphabet: ["Греческий алфавит", "Все 24 буквы по порядку. Нажми на карточку, чтобы услышать название буквы и простое слово."],
+    rules: ["Сочетания и чтение", "Основные правила с примерами. Слова внутри одной карточки произносятся по одному с паузой."],
+    numbers: ["Цифры и числа", "Базовые формы и система построения больших чисел. Составное число произносится как одна фраза."]
+  };
+
+  document.getElementById("app").innerHTML = `
+    <main class="reference-shell shell">
+      <header class="topbar">
+        <div class="brand"><span class="brand-mark">λ</span><span class="brand-name">Лекси</span></div>
+        <button class="secondary-btn compact" data-action="home">К курсу</button>
+      </header>
+      <section class="reference-hero">
+        <p class="eyebrow">Сводные данные</p>
+        <h1>${titles[tab][0]}</h1>
+        <p>${titles[tab][1]}</p>
+      </section>
+      <nav class="reference-tabs" aria-label="Разделы сводки">
+        ${tabs.map(item => `<button class="reference-tab ${item.id === tab ? "active" : ""}" data-ref-tab="${item.id}">${item.label}</button>`).join("")}
+      </nav>
+      <section class="reference-content">
+        ${tab === "alphabet" ? renderReferenceAlphabet() : tab === "rules" ? renderReferenceRules() : renderReferenceNumbers()}
+      </section>
+    </main>`;
+
+  document.querySelector('[data-action="home"]').addEventListener("click", renderHome);
+  document.querySelectorAll("[data-ref-tab]").forEach(button => {
+    button.addEventListener("click", () => renderReference(button.dataset.refTab));
+  });
+  document.querySelectorAll("[data-ref-audio]").forEach(button => {
+    button.addEventListener("click", () => speak(referenceAudioSources[Number(button.dataset.refAudio)], button));
+  });
+  window.scrollTo(0, 0);
+}
+
+function registerReferenceAudio(source) {
+  referenceAudioSources.push(source);
+  return referenceAudioSources.length - 1;
+}
+
+function renderReferenceAlphabet() {
+  return `<div class="reference-grid alphabet-grid">
+    ${REFERENCE_ALPHABET.map(item => {
+      const audioIndex = registerReferenceAudio(item.audio);
+      return `<button class="ref-card alphabet-card" data-ref-audio="${audioIndex}">
+        <span class="ref-letter">${item.letter}</span>
+        <span class="ref-body">
+          <span class="ref-title">${item.name}</span>
+          <span class="ref-reading">Звук: ${item.sound}</span>
+          <span class="ref-example"><b>${item.example}</b> · ${item.reading} · ${item.meaning}</span>
+        </span>
+        <span class="ref-listen"><span class="speak-dot"></span><span class="speak-label">Название и пример</span></span>
+      </button>`;
+    }).join("")}
+  </div>`;
+}
+
+function renderReferenceRules() {
+  return `<div class="reference-grid rules-grid">
+    ${REFERENCE_RULES.map(item => {
+      const audioIndex = registerReferenceAudio(item.audio);
+      return `<button class="ref-card rule-card" data-ref-audio="${audioIndex}">
+        <span class="rule-top"><span class="rule-pattern">${item.pattern}</span><span class="rule-reading">${item.reading}</span></span>
+        <span class="ref-body">
+          <span class="ref-title">${item.title}</span>
+          <span class="ref-note">${item.note}</span>
+          <span class="ref-example"><b>${item.examples.join(", ")}</b> · ${item.transcript}</span>
+        </span>
+        <span class="ref-listen"><span class="speak-dot"></span><span class="speak-label">Послушать примеры</span></span>
+      </button>`;
+    }).join("")}
+  </div>`;
+}
+
+function renderReferenceNumbers() {
+  const groups = [...new Set(REFERENCE_NUMBERS.map(item => item.group))];
+  return `<div class="number-reference">
+    <div class="reference-notice">Для самостоятельного чтения показаны нейтральные формы. В речи формы 1, 3, 4 и сотен могут меняться рядом с существительными.</div>
+    ${groups.map(group => `<section class="number-group">
+      <div class="number-group-head"><h2>${group}</h2><span>${REFERENCE_NUMBERS.filter(item => item.group === group).length} карточек</span></div>
+      <div class="reference-grid numbers-grid">
+        ${REFERENCE_NUMBERS.filter(item => item.group === group).map(item => {
+          const audioIndex = registerReferenceAudio(item.audio);
+          return `<button class="ref-card number-card" data-ref-audio="${audioIndex}">
+            <span class="number-value">${item.value}</span>
+            <span class="ref-body"><span class="number-greek">${item.greek}</span><span class="ref-note">${item.note}</span></span>
+            <span class="ref-listen"><span class="speak-dot"></span><span class="speak-label">Послушать</span></span>
+          </button>`;
+        }).join("")}
+      </div>
+    </section>`).join("")}
+  </div>`;
 }
 
 function startLesson(id) {
