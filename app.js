@@ -487,7 +487,7 @@ function renderHome() {
       </section>
 
       <section>
-        <div class="section-head"><h2>План курса</h2><p>Открывай занятия по порядку</p></div>
+        <div class="section-head"><h2>План курса</h2><p>Можно открыть любое занятие</p></div>
         ${BLOCKS.map(renderBlock).join("")}
       </section>
 
@@ -516,10 +516,10 @@ function renderBlock(block) {
         ${lessons.map(item => {
           const unlocked = isUnlocked(item.id);
           const doneClass = state.c.includes(item.id) ? "done" : "";
-          return `<button class="lesson-row ${unlocked ? "" : "locked"} ${doneClass}" ${unlocked ? `data-lesson="${item.id}"` : "disabled"}>
+          return `<button class="lesson-row ${unlocked ? "" : "early"} ${doneClass}" data-lesson="${item.id}">
             <span class="lesson-icon">${item.glyph}</span>
             <span class="lesson-copy"><strong>${item.id}. ${item.title}</strong><span>${item.subtitle}</span></span>
-            <span class="lesson-status">${doneClass ? "готово" : unlocked ? "открыто" : "закрыто"}</span>
+            <span class="lesson-status">${doneClass ? "готово" : unlocked ? "открыто" : "вне очереди"}</span>
           </button>`;
         }).join("")}
       </div>
@@ -629,13 +629,58 @@ function renderReferenceNumbers() {
   </div>`;
 }
 
-function startLesson(id) {
+function startLesson(id, skipWarning = false) {
   const current = LESSONS.find(item => item.id === id);
-  if (!current || !isUnlocked(id)) return;
+  if (!current) return;
+  if (!skipWarning && !isUnlocked(id)) {
+    showLessonWarning(id);
+    return;
+  }
   state.l = id;
   saveState();
   session = { lesson: current, step: 0, correct: 0, answered: 0, selected: null };
   renderLesson();
+}
+
+function showLessonWarning(id) {
+  document.querySelector(".warning-backdrop")?.remove();
+  const current = LESSONS.find(item => item.id === id);
+  const missed = LESSONS.slice(0, id - 1).filter(item => !state.c.includes(item.id));
+  const modal = document.createElement("div");
+  modal.className = "warning-backdrop";
+  modal.innerHTML = `
+    <div class="warning-dialog" role="dialog" aria-modal="true" aria-labelledby="warningTitle">
+      <span class="warning-mark">${id}</span>
+      <p class="eyebrow">Занятие вне очереди</p>
+      <h2 id="warningTitle">${current.title}</h2>
+      <p>Перед этим занятием еще не пройдено: ${missed.length}. Внутри могут встретиться незнакомые буквы и правила.</p>
+      <div class="warning-actions">
+        <button class="secondary-btn" data-warning="cancel">Вернуться к плану</button>
+        <button class="primary-btn dark" data-warning="open">Все равно открыть</button>
+      </div>
+    </div>`;
+  document.body.append(modal);
+  document.body.classList.add("modal-open");
+
+  const close = () => {
+    modal.remove();
+    document.body.classList.remove("modal-open");
+    document.removeEventListener("keydown", onKeydown);
+  };
+  const onKeydown = event => {
+    if (event.key === "Escape") close();
+  };
+
+  modal.querySelector('[data-warning="cancel"]').addEventListener("click", close);
+  modal.querySelector('[data-warning="open"]').addEventListener("click", () => {
+    close();
+    startLesson(id, true);
+  });
+  modal.addEventListener("click", event => {
+    if (event.target === modal) close();
+  });
+  document.addEventListener("keydown", onKeydown);
+  modal.querySelector('[data-warning="open"]').focus();
 }
 
 function renderLesson() {
