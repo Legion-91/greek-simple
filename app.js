@@ -858,7 +858,40 @@ function stopSpeech() {
   if ("speechSynthesis" in window) window.speechSynthesis.cancel();
 }
 
-function speak(source, button) {
+function findGreekVoice() {
+  const voices = window.speechSynthesis.getVoices();
+  return voices.find(item => /^el(?:-|_)/i.test(item.lang))
+    || voices.find(item => /greek|ελλην/i.test(`${item.name} ${item.voiceURI || ""}`))
+    || null;
+}
+
+function waitForGreekVoice(timeout = 2500) {
+  const immediate = findGreekVoice();
+  if (immediate) return Promise.resolve(immediate);
+
+  return new Promise(resolve => {
+    let settled = false;
+    const synthesis = window.speechSynthesis;
+    const finish = voice => {
+      if (settled) return;
+      settled = true;
+      clearInterval(poll);
+      clearTimeout(timer);
+      synthesis.removeEventListener?.("voiceschanged", checkVoices);
+      resolve(voice);
+    };
+    const checkVoices = () => {
+      const voice = findGreekVoice();
+      if (voice) finish(voice);
+    };
+    const poll = setInterval(checkVoices, 100);
+    const timer = setTimeout(() => finish(findGreekVoice()), timeout);
+    synthesis.addEventListener?.("voiceschanged", checkVoices);
+    synthesis.getVoices();
+  });
+}
+
+async function speak(source, button) {
   if (!("speechSynthesis" in window)) {
     showToast("В этом браузере озвучивание недоступно");
     return;
@@ -878,6 +911,7 @@ function speak(source, button) {
     button.disabled = true;
     button.classList.add("speaking");
   }
+  if (label) label.textContent = "Загружаю греческий голос";
 
   const finish = () => {
     if (token !== activeSpeech) return;
@@ -887,6 +921,14 @@ function speak(source, button) {
     }
     if (label) label.textContent = initialLabel;
   };
+
+  const greekVoice = await waitForGreekVoice();
+  if (token !== activeSpeech) return;
+  if (!greekVoice) {
+    finish();
+    showToast("На компьютере не найден греческий голос. Добавь греческий голос в настройках системы");
+    return;
+  }
 
   const playItem = index => {
     if (token !== activeSpeech) return;
@@ -900,8 +942,7 @@ function speak(source, button) {
     const utterance = new SpeechSynthesisUtterance(item.text);
     utterance.lang = "el-GR";
     utterance.rate = .78;
-    const voices = window.speechSynthesis.getVoices();
-    utterance.voice = voices.find(itemVoice => itemVoice.lang.toLowerCase().startsWith("el")) || null;
+    utterance.voice = greekVoice;
     utterance.onend = () => {
       if (token !== activeSpeech) return;
       if (index < items.length - 1) setTimeout(() => playItem(index + 1), gap);
