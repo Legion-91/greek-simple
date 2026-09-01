@@ -15,6 +15,7 @@ const choice = (symbol, prompt, options, answer, note = "", speak = "") =>
   ({ type: "choice", symbol, prompt, options, answer, note, speak });
 const voice = text => ({ text });
 const audio = (items, label = "Послушать", gap = 650) => ({ items, label, gap });
+const AUDIO_CHUNK_COUNT = 22;
 
 function lesson(id, block, title, subtitle, glyph, steps) {
   return { id, block, title, subtitle, glyph, steps: [intro(title, subtitle), ...steps] };
@@ -419,6 +420,10 @@ let state = loadState();
 let session = null;
 let activeSpeech = 0;
 let referenceAudioSources = [];
+let audioContext = null;
+let audioBufferPromise = null;
+let audioManifestPromise = null;
+let activeAudioNode = null;
 
 function loadState() {
   try {
@@ -855,48 +860,76 @@ function completeLesson() {
 
 function stopSpeech() {
   activeSpeech += 1;
+  if (activeAudioNode) {
+    try { activeAudioNode.stop(); } catch {}
+    activeAudioNode = null;
+  }
   if ("speechSynthesis" in window) window.speechSynthesis.cancel();
 }
 
-function findGreekVoice() {
-  const voices = window.speechSynthesis.getVoices();
-  return voices.find(item => /^el(?:-|_)/i.test(item.lang))
-    || voices.find(item => /greek|ελλην/i.test(`${item.name} ${item.voiceURI || ""}`))
-    || null;
+function getAudioContext() {
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) throw new Error("Web Audio is unavailable");
+  if (!audioContext) audioContext = new AudioContextClass();
+  return audioContext;
 }
 
-function waitForGreekVoice(timeout = 2500) {
-  const immediate = findGreekVoice();
-  if (immediate) return Promise.resolve(immediate);
+async function loadAudioPack() {
+  const context = getAudioContext();
+  if (context.state === "suspended") await context.resume();
+  if (!audioManifestPromise) {
+    audioManifestPromise = fetch("audio/greek-speech.json?v=1").then(response => {
+      if (!response.ok) throw new Error("Audio manifest failed to load");
+      return response.json();
+    });
+  }
+  if (!audioBufferPromise) {
+    audioBufferPromise = Promise.all(Array.from({ length: AUDIO_CHUNK_COUNT }, async (_, index) => {
+      const name = String(index).padStart(3, "0");
+      const response = await fetch(`audio/chunks/greek-${name}?v=1`);
+      if (!response.ok) throw new Error(`Audio chunk ${name} failed to load`);
+      return new Uint8Array(await response.arrayBuffer());
+    })).then(chunks => {
+      const length = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
+      const data = new Uint8Array(length);
+      let offset = 0;
+      for (const chunk of chunks) {
+        data.set(chunk, offset);
+        offset += chunk.length;
+      }
+      return context.decodeAudioData(data.buffer);
+    });
+  }
+  try {
+    const [manifest, buffer] = await Promise.all([audioManifestPromise, audioBufferPromise]);
+    return { context, manifest, buffer };
+  } catch (error) {
+    audioManifestPromise = null;
+    audioBufferPromise = null;
+    throw error;
+  }
+}
 
-  return new Promise(resolve => {
-    let settled = false;
-    const synthesis = window.speechSynthesis;
-    const finish = voice => {
-      if (settled) return;
-      settled = true;
-      clearInterval(poll);
-      clearTimeout(timer);
-      synthesis.removeEventListener?.("voiceschanged", checkVoices);
-      resolve(voice);
+async function playRecordedText(text, token) {
+  const { context, manifest, buffer } = await loadAudioPack();
+  if (token !== activeSpeech) return;
+  const segment = manifest[text];
+  if (!segment) throw new Error(`Audio segment is missing: ${text}`);
+
+  await new Promise(resolve => {
+    const source = context.createBufferSource();
+    activeAudioNode = source;
+    source.buffer = buffer;
+    source.connect(context.destination);
+    source.onended = () => {
+      if (activeAudioNode === source) activeAudioNode = null;
+      resolve();
     };
-    const checkVoices = () => {
-      const voice = findGreekVoice();
-      if (voice) finish(voice);
-    };
-    const poll = setInterval(checkVoices, 100);
-    const timer = setTimeout(() => finish(findGreekVoice()), timeout);
-    synthesis.addEventListener?.("voiceschanged", checkVoices);
-    synthesis.getVoices();
+    source.start(0, segment.start, segment.duration);
   });
 }
 
 async function speak(source, button) {
-  if (!("speechSynthesis" in window)) {
-    showToast("В этом браузере озвучивание недоступно");
-    return;
-  }
-
   const isAudioGroup = source && typeof source === "object" && !Array.isArray(source) && "items" in source;
   const spec = isAudioGroup ? source : { items: Array.isArray(source) ? source : [source] };
   const items = (Array.isArray(spec.items) ? spec.items : [spec.items]).filter(Boolean);
@@ -904,14 +937,18 @@ async function speak(source, button) {
   if (!items.length) return;
 
   const token = ++activeSpeech;
-  window.speechSynthesis.cancel();
+  if (activeAudioNode) {
+    try { activeAudioNode.stop(); } catch {}
+    activeAudioNode = null;
+  }
+  if ("speechSynthesis" in window) window.speechSynthesis.cancel();
   const label = button?.querySelector(".speak-label");
   const initialLabel = label?.textContent || "Послушать";
   if (button) {
     button.disabled = true;
     button.classList.add("speaking");
   }
-  if (label) label.textContent = "Загружаю греческий голос";
+  if (label) label.textContent = "Загружаю звук";
 
   const finish = () => {
     if (token !== activeSpeech) return;
@@ -922,15 +959,7 @@ async function speak(source, button) {
     if (label) label.textContent = initialLabel;
   };
 
-  const greekVoice = await waitForGreekVoice();
-  if (token !== activeSpeech) return;
-  if (!greekVoice) {
-    finish();
-    showToast("На компьютере не найден греческий голос. Добавь греческий голос в настройках системы");
-    return;
-  }
-
-  const playItem = index => {
+  const playItem = async index => {
     if (token !== activeSpeech) return;
     if (index >= items.length) {
       finish();
@@ -939,17 +968,16 @@ async function speak(source, button) {
 
     if (label && items.length > 1) label.textContent = `Слушаем ${index + 1} из ${items.length}`;
     const item = items[index] && typeof items[index] === "object" ? items[index] : voice(items[index]);
-    const utterance = new SpeechSynthesisUtterance(item.text);
-    utterance.lang = "el-GR";
-    utterance.rate = .78;
-    utterance.voice = greekVoice;
-    utterance.onend = () => {
+    try {
+      await playRecordedText(item.text, token);
       if (token !== activeSpeech) return;
       if (index < items.length - 1) setTimeout(() => playItem(index + 1), gap);
       else finish();
-    };
-    utterance.onerror = finish;
-    window.speechSynthesis.speak(utterance);
+    } catch (error) {
+      console.error(error);
+      finish();
+      showToast("Не удалось загрузить греческую озвучку. Проверь подключение к интернету");
+    }
   };
 
   playItem(0);
